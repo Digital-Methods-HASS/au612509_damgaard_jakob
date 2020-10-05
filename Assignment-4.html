@@ -380,24 +380,27 @@ summary {
 
 <div id="use-r-to-figure-out-how-many-elements-in-the-vector-below-are-greater-than-2" class="section level2">
 <h2>Use R to figure out how many elements in the vector below are greater than 2</h2>
+<p>Initially, I define the vector ‘rooms’. I then proceed to discard all NAs using the ‘na.omit()’ function. Finally, I find the amount of elements with a value above two using the ‘length()’ function on the following subset of ‘rooms’: rooms[room&gt;2].</p>
 <pre class="r"><code>#Initializing the vector
 rooms &lt;- c(1, 2, 1, 3, 1, NA, 3, 1, 3, 2, 1, NA, 1, 8, 3, 1, 4, NA, 1, 3, 1, 2, 1, 7, 1, NA)
 
 #Filtering out all NAs 
-rooms &lt;- rooms[!is.na(rooms)]
+rooms &lt;- na.omit(rooms)
 
 #Counting number of elements with a value above 2
 length(rooms[rooms&gt;2])</code></pre>
 <pre><code>## [1] 8</code></pre>
+<p>The number of elements with a value above 2 is 8.</p>
 </div>
 <div id="what-is-the-result-of-running-median-function-on-the-above-rooms-vector" class="section level2">
 <h2>What is the result of running median() function on the above ‘rooms’ vector?</h2>
+<p>Running the ‘median()’ function on the na-omitted ‘rooms’ yields a median of 1.5</p>
 <pre class="r"><code>#Taking the median of the values in the vector
 median(rooms)</code></pre>
 <pre><code>## [1] 1.5</code></pre>
 </div>
-<div id="what-is-the-result-of-running-median-function-on-the-above-rooms-vector-1" class="section level2">
-<h2>What is the result of running median() function on the above ‘rooms’ vector?</h2>
+<div id="download-and-read-safi_clean.csv" class="section level2">
+<h2>Download and read SAFI_clean.csv</h2>
 <pre class="r"><code>#Installing packages
 pacman::p_load(tidyverse)
 
