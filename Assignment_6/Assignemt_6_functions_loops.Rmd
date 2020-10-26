@@ -1,0 +1,78 @@
+---
+title: "Assignment 6"
+author: "Jakob Grøhn Damgaard"
+date: "10/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(tidyverse, gapminder, ggplot2, base, dplyr, randomcoloR)
+```
+
+# Question 1
+**Define a defensive function that calculates the Gross Domestic Product of a nation from the data available in the gapminder dataset. Using that function, calculate the GDP of Denmark in the following years: 1967, 1977, 1987, 1997, 2007, and 2017.** 
+\
+```{r Question 1}
+calcGDP <- function(data, year, country) { # input variables to the function is 'data', 'year' and 'country'
+    data <- data[data$year %in% year, ] # subsetting data for specified year
+    data <- data[data$country %in% country,] # subsetting data for specified country
+  gdp <- data$pop * data$gdpPercap # calculating gdp 
+  new <- cbind(data, gdp=gdp) # adding gdp as a column to the data frame
+  return(new)
+}
+```
+\
+Running function on Denmark
+```{r}
+years <- unique(gapminder$year)[grep("7$", unique(gapminder$year),)] # defining a list of all years ending in '7'
+for (year in years){ # looping through all the years in the list 'years' and running the function for each year
+  row = calcGDP(gapminder, year, "Denmark")
+  print(row) # printing output
+}
+```
+
+# Question 2
+**Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘B’ , and print out whether the life expectancy is smaller than 50, between 50 and 70, or greater than 70.**
+\
+```{r Quesrion 2}
+for (country in unique(gapminder$country)){ # loops through each unique country name
+  if (substring(country, 1, 1) == "B"){ # if-statement recogninsing if first letter in the country is 'B'
+    country_b_subset = gapminder[gapminder$country %in% country,] # create a subset data for the specific country starting with a 'B'
+    for (year in unique(country_b_subset$year)){ # loop through each year in the dataset 
+      year_subset = country_b_subset[country_b_subset$year %in% year,] # create a subset of the countries data containing only data from the specific year
+      if (year_subset$lifeExp < 50){ # checking life expectancy and printing a statement
+        cat("In", year, "the country", country, "had a life expectancy below 50. \n")
+      }
+      else if (year_subset$lifeExp > 50 && year_subset$lifeExp < 70){
+        cat("In", year, "the country", country, "had a life expectancy between 50 and 70. \n")
+      }
+      else{
+        cat("In", year, "the country", country, "had a life expectancy above 70. \n")
+      }
+    }
+  }
+}
+```
+\
+# Optional
+
+**Write a script that loops over each country in the gapminder dataset, tests whether the country starts with a ‘M’ and graphs life expectancy against time (using plot() function) as a line graph if the mean life expectancy is under 50 years.**
+
+```{r}
+for (country in unique(gapminder$country)){ # loops through each unique country name
+  if (substring(country, 1, 1) == "M"){ # if-statement recogninsing if first letter in the country is 'M'
+    country_m_subset = gapminder[gapminder$country %in% country,] # create a subset data for the specific country starting with a 'M'
+    colour = randomColor(luminosity = c("dark")) # setting a radnom colour to discriminate country-plots
+    plot <- ggplot(country_m_subset, aes(x=year, y=lifeExp)) + # plotting line plot
+      geom_line(colour = colour, size = 1.1)+
+      theme_bw()+
+      labs(x = "Year", # defining all labels
+      y = "Life expectancy",
+      title = country)
+    print(plot) # printing plot
+  }
+}
+```
+
