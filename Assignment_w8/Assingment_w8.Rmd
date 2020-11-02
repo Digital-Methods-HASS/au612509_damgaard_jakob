@@ -1,0 +1,98 @@
+---
+title: "Assignment_w8 - Option 2"
+author: "Jakob Grøhn Damgaard"
+date: "11/2/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this markdown file, I intend to web-scrape data containing information about the golf players with the most PGA Tour wins throughout history. The data will be scraped from the following Wikipedia article: https://en.wikipedia.org/wiki/List_of_golfers_with_most_PGA_Tour_wins
+
+This data will the be cleaned in order to produce a nice visualization of the top 25 players showing their wins against their yearly win rate. 
+
+# Solution
+
+First, install a handful of classic R packages and load their libraries:
+
+- `rvest` for web-scraping
+- `dplyr` for data-wrangling
+- `tidyr` for data transformation
+- `stringr` for string manipulation
+- `janitor` for clean headers that your OCD will love you for
+
+
+```{r libraries}
+library(pacman)
+p_load(rvest, dplyr, tidyr, stringr, janitor, tidyverse, ggrepel)
+```
+
+
+## Scraping the data
+We start by defining a URL and reading the HTML from the URL.
+```{r}
+url <- "https://en.wikipedia.org/wiki/List_of_golfers_with_most_PGA_Tour_wins"
+# Scraping the website
+url_html <- read_html(url)
+```
+
+Afterwards, we use load the data from a specific HTML-node into a table, and create a tibble.
+```{r, option3}
+# Extracting the desired data table
+whole_table <- url_html %>% 
+ html_node(xpath = '//*[@id="mw-content-text"]/div[1]/table') %>% 
+ html_table(fill = TRUE) 
+
+# Inspecting the data
+whole_table %>% head() 
+```
+\
+Following screenshot shows how the 'xpath' leading to the requested data table is found:
+![How to locate the 'xpath' of an element](/Users/jakobgrohn/Desktop/Cognitive_Science/Cognitive Science 5th semester/Introduction to Cultural Data Science/CDS_Assignments/Assignment_w8/xpath.png)
+
+## Pre-processing the data
+```{r}
+# Turning data into a tibble
+pga_tour_wins <- as_tibble(whole_table) 
+
+# Extracting only the 25 players with most wins
+pga_tour_wins <- pga_tour_wins[0:25,]
+
+# Renaming column names
+pga_tour_wins <- 
+  rename(pga_tour_wins, 'Name'= 'Name[a]', 
+         'Birth_death' = 'Year of birthand death', 
+         'Majors' = 'Majors[b]', 
+         'Span' = 'Span(years)')
+
+# Add column indicating if players is still alive
+pga_tour_wins$Still_alive <- grepl('–$', pga_tour_wins$Birth_death)
+
+# Removing unnecessary 'H' from all names
+pga_tour_wins$Name <- gsub('.{2}$', '', pga_tour_wins$Name)
+```
+
+
+## Visualizing the data 
+```{r}
+# Plotting total wins against  wins per year
+ggplot(pga_tour_wins, aes(Wins, Wins/Span, label = Name, size = Majors, color = Still_alive)) +
+  geom_point() + 
+  geom_label_repel(aes(label=Name), # Adding labels to points
+                   label.size = NA, 
+                   alpha = 0.6, 
+                   label.padding=.1, 
+                   na.rm=TRUE) +
+  theme_classic() + # Setting prettier  theme
+  labs(x = "PGA Tour Wins", # Defining all labels
+       y = "Wins per year",
+       title ="PGA Tour wins agianst yearly win rate")+
+  scale_color_manual(name = "Alive", labels = c("No", "Yes"), values = c("black","#d8b365")) # Customizing legend for alive/not alive
+```
+
+As can be inferred from the legends displayed on the plot, the size of the labels correspond to the number of major events that the respective players have won and the color of the labels reveal whether the player is presently still alive.
+The visualization shows that the players with the most wins overall also seem to be the players who have performed with the highest average yearly win-rates. This finding was also expected.
